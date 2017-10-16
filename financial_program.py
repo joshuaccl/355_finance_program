@@ -54,6 +54,7 @@ def reg():
 			fieldnames = ['username', 'password']
 			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 			writer.writerow({'username':username,'password':password})
+		credentials[username] = password
 		return username
 
 
