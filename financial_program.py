@@ -3,36 +3,33 @@
 # Date: 10/14/17
 
 import csv
+import finance
 
 credentials = {}
 try:
-	csvfile = open('credentials.csv', 'r')
+	with open('credentials.csv', 'r') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			credentials[row['username']] = row['password']
 except IOError:
-	csvfile = open('credentials.csv', 'w')
-	fieldnames = ['username', 'password']
-	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
-	writer.writeheader()
-reader = csv.DictReader(csvfile)
-try:
-	for row in reader:
-		credentials[row['username']] = row['password']
-except IOError:
-	donothing = 3
-
+	with open('credentials.csv', 'w') as csvfile:
+		fieldnames = ['username', 'password']
+		writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+		writer.writeheader()
 def signIn():
 	username = input("Please enter your username: ")
 	password = input("Please enter your password: ")
 	if username in credentials:
 		if password == credentials[username]:
 			print('Logging in...\n\n')
-			return 1
+			return username
 		else:
 			print('Incorrect username and password combination\n\n')
 			return 0	
 	else:
 		callReg = input("Username does not exist. Do you want to create a new account? (y or n): ")
 		if callReg is 'y':
-			reg()
+			return reg()
 		else:
 			return 0
 
@@ -57,7 +54,7 @@ def reg():
 			fieldnames = ['username', 'password']
 			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 			writer.writerow({'username':username,'password':password})
-		return 1
+		return username
 
 
 banner = '\n\t\tWelcome to the Financial Calculator Program!\n\t\t\t\tVersion 1.0\n\n\t\t\tFeatures Included:\n\n\t\t\t**Account Management**\n\t\t\t**Currency Conversion**\n\t\t\t**Multiple Currency Support**\n\t\t\t**Persisting Database**\n\n\t\tDo you want to sign in (s) or register (r) or quit (q)?\n'
@@ -65,11 +62,13 @@ while 1:
 	print(banner)	
 	signOrReg = input("Please enter s or r or q: ")
 	if signOrReg is 's':
-		if signIn():
-			print('call next function')
+		s = signIn()
+		if s:
+			finance.bank(s)
 	elif signOrReg is 'r':
-		if reg():
-			print('call next function')
+		r = reg()
+		if r:
+			finance.bank(r)
 	elif signOrReg is 'q':
 		break
 	else:
