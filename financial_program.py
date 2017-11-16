@@ -37,6 +37,9 @@ def reg():
 	breakout = input("Do you really want to register an account? (y or n): ")
 	if breakout is 'n':
 		return 0
+	elif breakout is not 'y':
+		print("You did not input a y")
+		return 0
 	username = input("Please enter your username: ")
 	password = input("Please enter your password: ")
 	confirm = input("Please re-enter your password for confirmation: ")
