@@ -62,10 +62,16 @@ def withdraw(user, conversions):
 			reader = csv.DictReader(csvfile)
 			for row in reader:
 				balances[row['username']] = [row['balance'],row['currency']]
-		print("Withdrawing " + balances[user][1] + str(amount) + "...")		
+		type_of_currency = input("What kind of currency do you want your withdrawal in? ( USD ($), EURO (E), Chinese Currency (C))")
+		if type_of_currency != '$' and type_of_currency != 'E' and type_of_currency != 'C':
+			print("You did not enter a valid currency. Exiting withdrawal service...")
+			return 0
+		print("Withdrawing " + type_of_currency + str(amount) + "...")		
 	balance = balances[user]
 	total = float(balance[0])
 	currency = balance[1]
+	currencies = conversions[type_of_currency]
+	amount *= float(currencies[currency])
 	if total > amount:
 		total -= amount
 		balance[0] = str(total)
