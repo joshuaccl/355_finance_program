@@ -5,6 +5,7 @@
 import csv
 import finance
 
+# Create password file if first time executing program
 credentials = {}
 try:
 	with open('credentials.csv', 'r') as csvfile:
@@ -16,6 +17,7 @@ except IOError:
 		fieldnames = ['username', 'password']
 		writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 		writer.writeheader()
+		writer.writerow({'username':'admin','password':'ics3552017'})
 def signIn():
 	username = input("Please enter your username: ")
 	password = input("Please enter your password: ")
@@ -61,18 +63,14 @@ def reg():
 		return username
 
 
-banner = '\n\t\tWelcome to the Financial Calculator Program!\n\t\t\t\tVersion 1.0\n\n\t\t\tFeatures Included:\n\n\t\t\t**Account Management**\n\t\t\t**Currency Conversion**\n\t\t\t**Multiple Currency Support**\n\t\t\t**Persisting Database**\n\n\t\tDo you want to sign in (s) or register (r) or quit (q)?\n'
+banner = '\n\t\tWelcome to the Financial Calculator Program!\n\t\t\t\tVersion 2.0\n\n\t\t\tFeatures Included:\n\n\t\t\t**Account Management**\n\t\t\t**Currency Conversion**\n\t\t\t**Multiple Currency Support**\n\t\t\t**Persisting Database**\n\t\t\t**Salted Passwords**\n\t\t\t**Admin Account**\n\n\t\tDo you want to sign in (s) or quit (q)?\n'
 while 1:
 	print(banner)	
-	signOrReg = input("Please enter s or r or q: ")
+	signOrReg = input("Please enter s or q: ")
 	if signOrReg is 's':
 		s = signIn()
 		if s:
 			finance.bank(s)
-	elif signOrReg is 'r':
-		r = reg()
-		if r:
-			finance.bank(r)
 	elif signOrReg is 'q':
 		break
 	else:
