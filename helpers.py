@@ -1,5 +1,9 @@
+# File: helpers.py
+# Author: Joshua Lam
+
 import csv
 
+# Deposit amount into user account
 def deposit(user, conversions):
 	amount = float(input("How much would you like to deposit? Please only enter a numeric number with two decimal places for example 5 dollars will be 5.00. I will ask you for the currency type later. "))
 	try:
@@ -12,14 +16,14 @@ def deposit(user, conversions):
 		return 0
 	currency = input("What kind of money are you depositing? ( USD ($), EURO (E), Chinese currency (C): ")
 	if currency is '$' or currency is 'E' or currency is 'C':
-		d = input("Do you want to deposit " + currency + str(amount) + "? (y or n): ")
+		d = input("Do you want to deposit " + currency + round(amount) + "? (y or n): ")
 	else:
 		print("You did not enter a valid currency type. Exiting deposit service...")
 		return 0
 	if d is not 'y':
 		print("You did not want to deposit, exiting deposit service...")
 	else:
-		print("Depositing " + currency + str(amount) + "...")
+		print("Depositing " + currency + round(amount) + "...")
 		balances = {}
 		with open('accounts.csv', 'r') as csvfile:
 			reader = csv.DictReader(csvfile)
@@ -45,7 +49,7 @@ def deposit(user, conversions):
 		for key in balances:
 			writer.writerow({'username':key,'balance':balances[key][0],'currency':balances[key][1]})
 
-
+# Withdraw amount from a users account
 def withdraw(user, conversions):
 	amount = float(input("How much would you like to withdraw? Please only enter a numeric number with two decimal places. For example 5 dollars would be 5.00. "))
 	try:
@@ -66,18 +70,18 @@ def withdraw(user, conversions):
 		if type_of_currency != '$' and type_of_currency != 'E' and type_of_currency != 'C':
 			print("You did not enter a valid currency. Exiting withdrawal service...")
 			return 0
-		print("Withdrawing " + type_of_currency + str(amount) + "...")		
+		print("Withdrawing " + type_of_currency + round(amount) + "...")		
 	balance = balances[user]
 	total = float(balance[0])
 	currency = balance[1]
 	currencies = conversions[type_of_currency]
 	amount *= float(currencies[currency])
-	if total > amount:
+	if total >= amount:
 		total -= amount
 		balance[0] = str(total)
 		balances[user] = balance
 	else:
-		print("You only have " + currency + balance[0] + " in your account. Exiting withrawal service...")
+		print("You only have " + currency + round(balance[0]) + " in your account. Exiting withrawal service...")
 		return 0
 	with open('accounts.csv', 'w') as csvfile:
 		fieldnames = ['username', 'balance', 'currency']
@@ -86,7 +90,7 @@ def withdraw(user, conversions):
 		for key in balances:
 			writer.writerow({'username':key,'balance':balances[key][0],'currency':balances[key][1]})
 
-
+# Called when user wants to add in their own conversions
 def maintenance(conversions):
 	if not conversions:
 		setup = input("Would you like to upload some conversions from a file? (y or n): ")
@@ -112,6 +116,7 @@ def maintenance(conversions):
 			writeConversions(conversions)
 			return conversions
 			
+# Asks user for input for maintenance function
 def userinput():
 	ue = float(input("How many Euros are in a US Dollar? "))
 	uc = float(input("How many Chinese Yuans are in a US Dollar? "))
@@ -130,10 +135,8 @@ def userinput():
 	except TypeError:
 		print("You did not enter correct conversion values. Please try again")
 		return userinput()
-	
 
-
-
+# When new conversions are made this function writes it to file
 def writeConversions(conversions):
 	with open('conversions.csv', 'w') as csvfile:
 		fieldnames = ['type','$','E','C']
@@ -142,10 +145,32 @@ def writeConversions(conversions):
 		for key in conversions:
 			writer.writerow({'type':key,'$':conversions[key]['$'],'E':conversions[key]['E'],'C':conversions[key]['C']})
 
+# Checks the balance of a given user
 def check(user):
 	with open('accounts.csv', 'r') as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
 			if row['username'] == user:
-				print("You currently have " + row['currency'] + row['balance'])
+				print("You currently have " + row['currency'] + round(row['balance']))
 				break
+
+# Changes an input value into a monetary value. i.e. two decimal places
+def round(money):
+	listx = list(str(money))
+	for i in range(0, len(listx)):
+		if listx[i] == '.':
+			break
+	if len(listx) == i-1:
+		listx.append('.')
+		listx.append('0')
+		listx.append('0')
+		return ''.join(listx)
+	elif len(listx) == i + 1:
+		listx.append('0')
+		listx.append('0')
+		return ''.join(listx)
+	elif len(listx) == i + 2:
+		listx.append('0')
+		return ''.join(listx)
+	else:
+		return ''.join(listx[0:i+3])

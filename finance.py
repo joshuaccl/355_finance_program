@@ -1,3 +1,5 @@
+# File: finance.py
+# Author: Joshua Lam
 # File containing finance program that offers services to user
 
 import csv
