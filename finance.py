@@ -1,13 +1,12 @@
 # File: finance.py
 # Author: Joshua Lam
-# File containing finance program that offers services to user
+# File containing finance program that offers services to admin
 
 import csv
 import helpers
 
 def bank(user):
 	conversions = {}
-	accountExists = 0
 	try:
 		with open('conversions.csv', 'r') as csvfile:
 			reader = csv.DictReader(csvfile)
@@ -29,33 +28,14 @@ def bank(user):
 			fieldnames = ['username', 'balance', 'currency']
 			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 			writer.writeheader()
-		accountExists = 0
-	if not accountExists:
-		newaccount = input("Our records show that you do not have an account with us. Would you like to make one? (y or n): ")
-		if newaccount == 'y':
-			currency = input('What kind of currency do you want to use? We have support for USD ($), EURO (E), or Chinese currency (C): ')
-			if currency is '$' or currency is 'E' or currency is 'C':	
-				with open('accounts.csv', 'a') as csvfile:
-					fieldnames = ['username', 'balance', 'currency']
-					writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
-					writer.writerow({'username':user,'balance':0,'currency':currency})
-				balance = 0.00
-			else:
-				print("You did not enter a supported currency. Quitting the Bank Teller...")
-				return 0
-		else:
-			print("Okay returning to log in screen...")
-			return 0
 
 	while 1:
-		print("\n\t\t\tYou can either: \n\t\t\tCheck your balance (CHECK)\n\t\t\tDeposit money (DEP)\n\t\t\tWithdraw money (WITH)\n\t\t\tEdit the currency conversions in the database (MAINT)\n\t\t\tLog out (LOG)\n")
+		print("\n\t\t\tYou can either: \n\t\t\tEdit the currency conversions in the database (MAINT)\n\t\t\tAdd a new user (ADD)\n\t\t\tDelete a current user (DEL)\n\t\t\tLog out (LOG)\n")
 		action = input("What do you want to do: ")
-		if action == 'CHECK':
-			helpers.check(user)
-		elif action == 'DEP':
-			helpers.deposit(user, conversions)
-		elif action == 'WITH':
-			helpers.withdraw(user, conversions)
+		if action == 'ADD':
+			helpers.reg()
+		elif action == 'DEL':
+			helpers.deleteUser()
 		elif action == 'MAINT':
 			conversions = {}
 			helpers.maintenance(conversions)

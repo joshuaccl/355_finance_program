@@ -2,6 +2,7 @@
 # Author: Joshua Lam
 
 import csv
+import salt
 
 # Deposit amount into user account
 def deposit(user, conversions):
@@ -160,12 +161,8 @@ def round(money):
 	for i in range(0, len(listx)):
 		if listx[i] == '.':
 			break
-	if len(listx) == i-1:
+	if len(listx) == i+1:
 		listx.append('.')
-		listx.append('0')
-		listx.append('0')
-		return ''.join(listx)
-	elif len(listx) == i + 1:
 		listx.append('0')
 		listx.append('0')
 		return ''.join(listx)
@@ -174,3 +171,131 @@ def round(money):
 		return ''.join(listx)
 	else:
 		return ''.join(listx[0:i+3])
+
+# Delete a user from the database
+def deleteUser():
+	credentials = {}
+	accounts = {}
+	with open('credentials.csv', 'r') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			credentials[row['username']] = [row['hash'], row['salt']]
+	print("The users in the database are...")
+	for key in credentials:
+		print(key)
+	with open('accounts.csv', 'r') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			accounts[row['username']] = [row['balance'], row['currency']]
+	whom = input("Which user do you want to delete?: ")
+	if whom == 'admin':
+		print("You cannot delete the admin account")
+		return 0
+	if whom in credentials:
+		del credentials[whom]
+		del accounts[whom]
+		with open('credentials.csv', 'w') as csvfile:
+			fieldnames = ['username', 'hash', 'salt']
+			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+			writer.writeheader()
+			for key in credentials:
+				writer.writerow({'username':key, 'hash':credentials[key][0],'salt':credentials[key][1]})
+		with open('accounts.csv', 'w') as csvfile:
+			fieldnames = ['username', 'balance', 'currency']
+			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+			writer.writeheader()
+			for key in accounts:
+				writer.writerow({'username':key, 'balance': accounts[key][0], 'currency': accounts[key][1]})
+	else:
+		print("That user does not exist in the database")
+	
+# Function to register a new account	
+def reg():
+	credentials = {}
+	with open('credentials.csv', 'r') as csvfile:
+        	reader = csv.DictReader(csvfile)
+        	for row in reader:
+                	credentials[row['username']] = [row['hash'], row['salt']]
+	breakout = input("Do you really want to register an account? (y or n): ")
+	if breakout is 'n':
+        	return 0
+	elif breakout is not 'y':
+        	print("You did not input a y")
+        	return 0
+	username = input("Please enter your username: ")
+	password = input("Please enter your password: ")
+	confirm = input("Please re-enter your password for confirmation: ")
+	if username in credentials:
+        	print("This username already exists!!! Please try again!")
+        	reg()
+	elif password != confirm:
+        	print("The passwords did not match. Please try again")
+        	reg()
+	elif len(password) < 8:
+        	print("Please enter a password that is longer than 8 characters")
+        	reg()
+	else:
+		with open('credentials.csv', 'a') as csvfile:
+                	fieldnames = ['username', 'hash', 'salt']
+                	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+                	newSalt = salt.getSalt()
+                	writer.writerow({'username':username,'hash':salt.getHash(password,newSalt), 'salt':newSalt})
+		credentials[username] = [salt.getHash(password,newSalt), newSalt]
+		return username
+
+# Transfers money from one account to another
+
+def transfer(user):
+	accounts = {}
+	with open('accounts.csv', 'r') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			accounts[row['username']] = [float(row['balance']), row['currency']]
+	if len(accounts) == 1:
+		print("No other accounts available to transfer money to")
+	print("The available accounts to transfer money to are...")
+	for key in accounts:
+		print(key)
+	whom = input("Which account do you want to transfer your money too? ")
+	if whom not in accounts:
+		print("That is not a valid account. Exiting...")
+		return 0
+	amount = float(round(input("How much money would you like to transfer from your account to " + key + "? ")))
+	try:
+		amount += 0.00
+	except TypeError:
+		print("You did not enter a valid monetary amount. Exiting...")
+		return 0
+	if amount < 0:
+		print("You cannot transfer anything less than 0. Exiting...")
+		return 0
+	type_curr = input("What type of money do you want to transfer? USD ($) , EURO (E) , Chinese Currency (C) ")
+	if type_curr != '$' and type_curr != 'E' and type_curr != 'C':
+		print("You did not enter a valid currency type. Exiting...")
+		return 0
+	print("Now transferring " + type_curr + round(amount) + " to " + whom)
+	conversions = {}
+	with open('conversions.csv', 'r') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			conversions[row['type']] = {'$':row['$'], 'E':row['E'], 'C':row['C']}
+	currencies = conversions[type_curr]
+	conversionRate = float(currencies[accounts[user][1]])
+	withdrawal = amount * conversionRate
+	if withdrawal > (accounts[user][0]):
+		print("You did not have enough funds in your account. Exiting...")
+		return 0
+	else:
+		accounts[user][0] -= withdrawal
+		withdrawal = withdrawal * float(conversions[accounts[user][1]][accounts[whom][1]])
+		accounts[whom][0] += withdrawal
+		with open('accounts.csv', 'w') as csvfile:
+			fieldnames = ['username', 'balance', 'currency']
+			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+			writer.writeheader()
+			for key in accounts:
+				writer.writerow({'username':key,'balance':accounts[key][0],'currency':accounts[key][1]})
+
+
+
+
